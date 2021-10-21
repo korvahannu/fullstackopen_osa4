@@ -1,0 +1,5 @@
+.env
+node_modules
+.eslintrc.js
+tester.rest
+Readme.txt
