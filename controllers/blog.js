@@ -20,6 +20,12 @@ notesRouter.post('/', (request, response) => {
 
     const blog = new Blog(request.body);
 
+   if(blog.title === undefined || blog.url === undefined)
+        return response.status(404).json({error:'TITLE OR URL UNDEFINED'});
+
+    if(blog.likes === undefined || blog.likes < 0)
+        blog.likes = 0;
+
     blog.save()
         .then(result => response.status(201).json(result));
 });
