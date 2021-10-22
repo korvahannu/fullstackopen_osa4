@@ -19,4 +19,14 @@ test('Does HTTP GET ALL return the correct amount of posts?', async () => {
 
 });
 
+test('Is returned object id-field called id instead of _id?', async () => {
+	const result = await api.get('/api/blogs/');
+	console.log(result.body.id);
+
+	// Jos joku id on määritelty, palautetaan true, halutaan false
+	expect(result.body.some(r => r._id !== undefined)).toBe(false);
+	// Jos joku _id ei ole määritetty, palautetaan true, halutaan false
+	expect(result.body.some(r => r.id === undefined)).toBe(false);
+});
+
 afterAll( () => mongoose.connection.close());
