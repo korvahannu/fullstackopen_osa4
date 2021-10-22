@@ -52,7 +52,7 @@ const blogs = [
     }  
 ];
 
-describe('4.3-4.7', () => {
+describe('4.3-4.7 Testing list helper', () => {
 
     test('dummy returns one', () => {
         const blogs = [];

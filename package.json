@@ -4,9 +4,9 @@
   "description": "Blogisovellus",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "jest --verbose"
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "test": "cross-env NODE_ENV=test jest --verbose"
   },
   "author": "Hannu Korvala",
   "license": "ISC",
@@ -17,12 +17,14 @@
     "mongoose": "^6.0.11"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "eslint": "^8.0.1",
     "jest": "^27.3.1",
-    "nodemon": "^2.0.14"
+    "nodemon": "^2.0.14",
+    "supertest": "^6.1.6"
   },
   "proxy": "http://localhost:3001",
   "jest": {
-	  "testEnvironment": "node"
+    "testEnvironment": "node"
   }
 }

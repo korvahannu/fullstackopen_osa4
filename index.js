@@ -1,14 +1,21 @@
-const express = require('express');                     // Importataan express express-muuttujaan
-const app = express();                                  // Otetaan käyttöön varsinainen express -kehys
-const cors = require('cors');                           // Otetaan käyttöön cors
+/*
+Tässä tehdään serverin alustus. Varsinainen express-sovellus löytyy ./app
+Testerit EIVÄT käytä tätä tiedostoa minkään alustamiseen.
 
-const logger = require('./utils/logger.js');            // Käytetään console.login sijaan
-const config = require('./utils/config.js');            // Sisältää erilaisia asetuksia
-const notesRouter = require('./controllers/blog.js');   // Router, joka ohjaa pyyntöjä
+Pseudokoodi:
+    app = require(express sovellus)
+    http = require(http)
 
-app.use(cors());                                        // MIDDLEWARE, sallii different origin pointin
-app.use(express.json());                                // MIDDLEWARE, parsii tulevaa tietoa helpompilukuiseksi
-app.use('/api/blogs', notesRouter);                     // MIDDLEWARE, joka käsittelee GET, POST, DELETE, PUT ym. pyyntöjä.
+    server = luo serveri http -objektista
+    server => kuuntele porttia 3001 tai mikälie
+*/
 
-// Kuunellaan porttia (kts models/config.js)
-app.listen(config.PORT, () => logger.info(`Server running on port ${config.PORT}`));
+const app = require('./app');
+const http = require('http');
+const config = require('./utils/config.js');
+const logger = require('./utils/logger.js');
+
+const server = http.createServer(app);
+
+// Kuunellaan porttia (kts utils/config.js)
+server.listen(config.PORT, () => logger.info(`Server running on port ${config.PORT}`));
