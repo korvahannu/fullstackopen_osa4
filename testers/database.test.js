@@ -5,6 +5,7 @@ const app = require('../app.js');
 const api = supertest(app);
 const database_helper = require('./database_helper.js');
 const Blog = require('../models/blog.js');
+const { application } = require('express');
 
 beforeEach(async () => {
 	await Blog.deleteMany({});
@@ -65,13 +66,61 @@ test('Does backend return 404 if post title or url is undefined?', async () => {
 
 	await api.post('/api/blogs')
 	.send(newBlog)
-	.expect(404)
-	.expect('Content-Type', /application\/json/);
+	.expect(404);
 
 	await api.post('/api/blogs')
 	.send(newBlog2)
-	.expect(404)
-	.expect('Content-Type', /application\/json/);
+	.expect(404);
 });
+
+test('Does deleting a post work?', async () => {
+
+	const startNotes = await database_helper.getBlogFromDatabase();
+	const noteToDelete = startNotes[0];
+
+	await api.delete(`/api/blogs/${noteToDelete.id}`)
+	.expect(204);
+
+	const endNotes = await database_helper.getBlogFromDatabase();
+
+	expect(endNotes).toHaveLength(startNotes.length-1);
+
+	const titles = endNotes.map(r => r.title);
+
+	expect(titles).not.toContainEqual(noteToDelete.title);
+});
+
+
+test('Does post updating (HTTP PUT) work?', async () => {
+
+	const newBlog = {
+		title: 'PUT_TEST_1',
+		author: 'Hannu Korvala',
+		url: 'TEST_URL',
+		likes: 10
+	};
+
+	const result = await api.post('/api/blogs')
+	.send(newBlog)
+	.expect(201)
+	.expect('Content-Type', /application\/json/);
+
+	const updateNoteTo = {
+		title: '2_PUT_TEST',
+		author: '2_Hannu Korvala',
+		url: '2_TEST_URL',
+		likes: 22
+	};
+
+	const updateResult = await api.put(`/api/blogs/${result.body.id}`)
+	.send(updateNoteTo)
+	.expect(201)
+	.expect('Content-Type', /application\/json/);
+
+	const blog = await database_helper.getBlogFromDatabase();
+	
+	expect(blog).toContainEqual(updateResult.body);
+});
+
 
 afterAll( () => mongoose.connection.close());
