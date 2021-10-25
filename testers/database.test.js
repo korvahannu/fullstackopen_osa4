@@ -5,8 +5,10 @@ const app = require('../app.js');
 const api = supertest(app);
 const database_helper = require('./database_helper.js');
 const Blog = require('../models/blog.js');
-const { application } = require('express');
+const User = require('../models/user.js');
+const cryptor = require('bcrypt');
 
+/*
 beforeEach(async () => {
 	await Blog.deleteMany({});
 	await Blog.insertMany(database_helper.dummyBlogs);
@@ -120,6 +122,104 @@ test('Does post updating (HTTP PUT) work?', async () => {
 	const blog = await database_helper.getBlogFromDatabase();
 	
 	expect(blog).toContainEqual(updateResult.body);
+});
+*/
+
+describe('User database tests', () => {
+
+	beforeEach(async () => {
+        await User.deleteMany({});
+
+        const passwordHash = await cryptor.hash('salaisuus', 10);
+        const user = new User({username:'root', passwordHash});
+
+        await user.save();
+    });
+
+	test('creation succeeds with a fresh username', async () => {
+
+        const usersAtStart = await database_helper.getUsersFromDatabase();
+
+        const newUser = {
+            username:'hkorvala',
+            name:'Hannu Korvala',
+            password:'kukka'
+        };
+
+        await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+        const usersAtEnd = await database_helper.getUsersFromDatabase();
+        expect(usersAtEnd).toHaveLength(usersAtStart.length+1);
+
+        const usernames = usersAtEnd.map(r => r.username);
+
+        expect(usernames).toContain(newUser.username);
+
+    });
+
+	test('creating fails with proper statuscode and message if username already taken', async () => {
+
+		const usersAtStart = await database_helper.getUsersFromDatabase();
+
+		const newUser = {
+			username: 'root',
+			name: 'superuser',
+			password: 'salainen'
+		};
+
+		const result = await api
+		.post('/api/users')
+		.send(newUser)
+		.expect(400)
+		.expect('Content-Type', /application\/json/);
+
+		expect(result.body.error).toContain('`username` to be unique');
+
+		const usersAtEnd = await database_helper.getUsersFromDatabase();
+
+		expect(usersAtEnd).toHaveLength(usersAtStart.length);
+	});
+
+	test('creating fails with proper statuscode and message if username or password missing or too short', async () => {
+
+		const usersAtStart = await database_helper.getUsersFromDatabase();
+
+		const newUser = {
+			name: 'superuser',
+			password: 'salainen'
+		};
+
+		const result = await api
+		.post('/api/users')
+		.send(newUser)
+		.expect(400)
+		.expect('Content-Type', /application\/json/);
+
+		expect(result.body.error).toContain('username or password undefined');
+
+		const newUser2 = {
+			username: 'h',
+			name: 'superuser',
+			password: 'salainen'
+		};
+
+		const newResult = await api
+		.post('/api/users')
+		.send(newUser2)
+		.expect(400)
+		.expect('Content-Type', /application\/json/);
+
+		expect(newResult.body.error).toContain('username or password too short');
+
+		const usersAtEnd = await database_helper.getUsersFromDatabase();
+
+		expect(usersAtEnd).toHaveLength(usersAtStart.length);
+	});
+
 });
 
 

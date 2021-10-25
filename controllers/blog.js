@@ -7,17 +7,12 @@ const Blog = require('../models/blog.js');
 notesRouter.get('/', async (request, response) => {
 
     const result = await Blog.find({});
-    try
-    {
-        if(result)
-            response.json(result.map(r => r.toJSON()));
-        else
-            response.status(404).end();
-    }
-    catch
-    {
+
+    if(result)
+        response.json(result.map(r => r.toJSON()));
+    else
         response.status(404).end();
-    }
+    
 
 });
 
@@ -32,9 +27,9 @@ notesRouter.post('/', (request, response) => {
         blog.likes = 0;
 
     blog.save()
-        .then(result => {;
-            response.status(201).json(result);
-        });
+    .then(result => {
+        response.status(201).json(result);
+    });
 });
 
 notesRouter.delete('/:id', async (request, response) => {
@@ -56,16 +51,9 @@ notesRouter.put('/:id', async (request, response) => {
     if(body.likes !== undefined)
         updatedBlog.likes = body.title;
 
-    try
-    {
-        const result = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new: true});
+    const result = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new: true});
 
-        response.status(201).json(result);
-    }
-    catch
-    {
-        response.status(404).end();
-    }
+    response.status(201).json(result);
 });
 
 module.exports = notesRouter;
