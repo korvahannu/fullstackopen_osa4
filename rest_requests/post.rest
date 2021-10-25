@@ -2,8 +2,9 @@ POST http://localhost:3001/api/blogs
 Content-Type: application/json
 
 {
-    "title": "New blogpost #4",
-    "Author": "Lorenzo Mischaulakia",
-    "url": "Tekstiä",
-    "likes": 24
+    "title":"Blog title 2",
+    "author":"Harry Potter",
+    "url":"www.google.com",
+    "likes":0,
+    "userId":"6176ce94ee9531319fe68a9a"
 }
