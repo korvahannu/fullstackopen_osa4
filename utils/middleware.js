@@ -19,9 +19,9 @@ const getTokenFrom = (request, response, next) => {
 const validateTokenGetUser = async (request, response, next) => {
 
   if(request.method.toLowerCase() === 'post'
-  ||request.method.toLowerCase() === 'delete')
+  ||request.method.toLowerCase() === 'delete'
+  ||request.method.toLowerCase() === 'put')
   {
-
     const token = request.token;
 
     const decodedToken = webtoken.verify(token, process.env.SECRET);
@@ -32,8 +32,6 @@ const validateTokenGetUser = async (request, response, next) => {
     }
 
     request.user = await User.findById(decodedToken.id);
-    
-    // TODO: put request jos vaaditaan tehtävänannoissa
   }
 
   next();

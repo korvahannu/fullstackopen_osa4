@@ -43,13 +43,9 @@ notesRouter.post('/', async (request, response) => {
 
     const savedBlog = await newBlog.save();
     user.blogs = user.blogs.concat(savedBlog._id);
-    
-    user.markModified('added a blog to user');
-    //await user.save();
 
-    /*
-    Kauankohan yritin saada user.save() toimimaan? ei toimi millään. ja miksi? ei mitään hajua. findByIdAndUpdate toimii oikein hyvin
-    */
+
+    //await user.save();
 
     await User.findByIdAndUpdate(user._id, user, {new: true});
 
@@ -64,7 +60,7 @@ notesRouter.delete('/:id', async (request, response) => {
 
     if(blog.user.toString() == user._id)
     {
-        blog.remove();
+        await blog.remove();
         response.status(204).end();
     }
     else
@@ -75,7 +71,10 @@ notesRouter.delete('/:id', async (request, response) => {
 });
 
 notesRouter.put('/:id', async (request, response) => {
+
+    const user = request.user;
     const body = request.body;
+
     let updatedBlog = [];
 
     if(body.title !== undefined)
@@ -86,10 +85,22 @@ notesRouter.put('/:id', async (request, response) => {
         updatedBlog.url = body.title;
     if(body.likes !== undefined)
         updatedBlog.likes = body.title;
+    
+    
+    const blog = await Blog.findById(request.params.id);
 
-    const result = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new: true});
+    if(blog.user.toString() == user._id)
+    {
+        const result = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new: true});
+        response.status(201).json(result);
+    }
+    else
+    {
+        response.status(401).json({error:'no access'});
+    }
+    
 
-    response.status(201).json(result);
+    
 });
 
 module.exports = notesRouter;
