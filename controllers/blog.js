@@ -1,27 +1,8 @@
 const notesRouter = require('express').Router();
 const Blog = require('../models/blog.js');
 const User = require('../models/user.js');
-const webtoken = require('jsonwebtoken');
-const blog = require('../models/blog.js');
 
 // Huom: Koska määritellän router, joka saa index.js:ssä parametrinä /api/notes, niin ei tarvi kuin laittaa / tähän
-
-const getTokenFrom = request => {
-
-    const authorization = request.get('authorization');
-
-    if(!authorization)
-        return null;
-
-    if(authorization.toLowerCase().startsWith('bearer '))
-    {
-        return authorization.substring(7);
-    }
-
-
-    return null;
-
-};
 
 notesRouter.get('/', async (request, response) => {
 
@@ -42,16 +23,7 @@ notesRouter.post('/', async (request, response) => {
 
     const body = request.body;
 
-    const token = request.token;
-
-    const decodedToken = webtoken.verify(token, process.env.SECRET);
-
-    if(!token ||!decodedToken)
-    {
-        return response.status(401).json({error: 'missing or invalid token'});
-    }
-
-    const user = await User.findById(decodedToken.id);
+    const user = request.user;
 
     if(body.title === undefined || body.url === undefined)
         return response.status(404).json({error:'TITLE OR URL UNDEFINED'});
@@ -87,13 +59,10 @@ notesRouter.post('/', async (request, response) => {
 
 notesRouter.delete('/:id', async (request, response) => {
 
+    const user = request.user;
     const blog = await Blog.findById(request.params.id);
-    const token = webtoken.verify(request.token, process.env.SECRET);
-    
-    if(!token)
-        response.status(401).json({error: 'invalid token'});
 
-    if(blog.user.toString() === token.id)
+    if(blog.user.toString() == user._id)
     {
         blog.remove();
         response.status(204).end();

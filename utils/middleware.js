@@ -1,4 +1,6 @@
 const logger = require('./logger');
+const User = require('../models/user.js');
+const webtoken = require('jsonwebtoken');
 
 // Middlewaren käyttöönottojärjestyksellä on väliä, katso app.js
 
@@ -9,6 +11,29 @@ const getTokenFrom = (request, response, next) => {
   if(authorization && authorization.toLowerCase().startsWith('bearer '))
   {
       request.token = authorization.substring(7);
+  }
+
+  next();
+};
+
+const validateTokenGetUser = async (request, response, next) => {
+
+  if(request.method.toLowerCase() === 'post'
+  ||request.method.toLowerCase() === 'delete')
+  {
+
+    const token = request.token;
+
+    const decodedToken = webtoken.verify(token, process.env.SECRET);
+
+    if(!token ||!decodedToken)
+    {
+        return response.status(401).json({error: 'missing or invalid token'});
+    }
+
+    request.user = await User.findById(decodedToken.id);
+    
+    // TODO: put request jos vaaditaan tehtävänannoissa
   }
 
   next();
@@ -45,4 +70,4 @@ const errorHandler = (error, request, response, next) => {
   next(error);  // Palauttaa järjestelmän omalle virheenkäsittelijälle
 };
 
-module.exports = { getTokenFrom, unknownEndpoint, errorHandler };
+module.exports = { getTokenFrom, validateTokenGetUser, unknownEndpoint, errorHandler };

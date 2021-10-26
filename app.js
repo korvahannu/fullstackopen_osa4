@@ -27,7 +27,7 @@ app.use(middleware.getTokenFrom);
 
 app.use('/api/login', loginRouter);
 app.use('/api/users', usersRouter);                     // MIDDLEWARE, joka käsittelee GET, POST, DELETE, PUT ym. pyyntöjä
-app.use('/api/blogs', blogsRouter);                     // MIDDLEWARE, joka käsittelee GET, POST, DELETE, PUT ym. pyyntöjä.
+app.use('/api/blogs', middleware.validateTokenGetUser, blogsRouter);                     // MIDDLEWARE, joka käsittelee GET, POST, DELETE, PUT ym. pyyntöjä.
 
 app.use(middleware.unknownEndpoint);                    // MIDDLEWARE, joka käsittelee jos pyyntö on kohdistunut tuntemattomaan osoitteeseen
 app.use(middleware.errorHandler);                       // MIDDLEWARE, joka käsittelee virheitä
