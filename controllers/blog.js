@@ -2,6 +2,7 @@ const notesRouter = require('express').Router();
 const Blog = require('../models/blog.js');
 const User = require('../models/user.js');
 const webtoken = require('jsonwebtoken');
+const blog = require('../models/blog.js');
 
 // Huom: Koska määritellän router, joka saa index.js:ssä parametrinä /api/notes, niin ei tarvi kuin laittaa / tähän
 
@@ -85,9 +86,23 @@ notesRouter.post('/', async (request, response) => {
 
 
 notesRouter.delete('/:id', async (request, response) => {
-    await Blog.findByIdAndDelete(request.params.id);
 
-    response.status(204).end();
+    const blog = await Blog.findById(request.params.id);
+    const token = webtoken.verify(request.token, process.env.SECRET);
+    
+    if(!token)
+        response.status(401).json({error: 'invalid token'});
+
+    if(blog.user.toString() === token.id)
+    {
+        blog.remove();
+        response.status(204).end();
+    }
+    else
+    {
+        response.status(401).json({error:'no access'});
+    }
+    
 });
 
 notesRouter.put('/:id', async (request, response) => {
