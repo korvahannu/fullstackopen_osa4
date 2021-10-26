@@ -1,9 +1,26 @@
 const notesRouter = require('express').Router();
 const Blog = require('../models/blog.js');
 const User = require('../models/user.js');
+const webtoken = require('jsonwebtoken');
 
 // Huom: Koska määritellän router, joka saa index.js:ssä parametrinä /api/notes, niin ei tarvi kuin laittaa / tähän
 
+const getTokenFrom = request => {
+
+    const authorization = request.get('authorization');
+
+    if(!authorization)
+        return null;
+
+    if(authorization.toLowerCase().startsWith('bearer '))
+    {
+        return authorization.substring(7);
+    }
+
+
+    return null;
+
+};
 
 notesRouter.get('/', async (request, response) => {
 
@@ -24,7 +41,16 @@ notesRouter.post('/', async (request, response) => {
 
     const body = request.body;
 
-    const user = await User.findById(body.userId);
+    const token = request.token;
+
+    const decodedToken = webtoken.verify(token, process.env.SECRET);
+
+    if(!token ||!decodedToken)
+    {
+        return response.status(401).json({error: 'missing or invalid token'});
+    }
+
+    const user = await User.findById(decodedToken.id);
 
     if(body.title === undefined || body.url === undefined)
         return response.status(404).json({error:'TITLE OR URL UNDEFINED'});
@@ -32,7 +58,7 @@ notesRouter.post('/', async (request, response) => {
     if(body.likes === undefined || body.likes < 0)
         body.likes = 0;
 
-    const blog = new Blog({
+    const newBlog = new Blog({
 
         title:body.title,
         author: body.author,
@@ -42,14 +68,19 @@ notesRouter.post('/', async (request, response) => {
 
     });
 
-    const result = await blog.save();
-
-    user.blogs = user.blogs.concat(result._id);
+    const savedBlog = await newBlog.save();
+    user.blogs = user.blogs.concat(savedBlog._id);
     
-    //await user.save();    <- en saanut toimimaan tuolla
+    user.markModified('added a blog to user');
+    //await user.save();
+
+    /*
+    Kauankohan yritin saada user.save() toimimaan? ei toimi millään. ja miksi? ei mitään hajua. findByIdAndUpdate toimii oikein hyvin
+    */
+
     await User.findByIdAndUpdate(user._id, user, {new: true});
 
-    response.json(result.toJSON());
+    response.json(savedBlog.toJSON());
 });
 
 

@@ -1,10 +1,10 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjYxNzZmZWRmZTM1NzUwNjYzZWRkZGNhZiIsImlhdCI6MTYzNTIzMTk5MX0.m4O8vENY7nLj1aWKqb_LETqH_9pp2yuZr1qibXnCPhw
 
 {
-    "title":"Blog title 2",
-    "author":"Harry Potter",
-    "url":"www.google.com",
-    "likes":0,
-    "userId":"6176ce94ee9531319fe68a9a"
+    "author":"test 26.10.2021",
+    "title":"test",
+    "url":"test",
+    "likes":5
 }
